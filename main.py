@@ -23,6 +23,7 @@ def distance(i: Node, j: Node):
     return sd.euclidean((i.x, j.x), (i.y, j.y))
 
 
+# the set of nodes j∈N where d(i,j)≤r
 def S(i: Node):
     l: list[Node] = []
     for j in nodes:

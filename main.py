@@ -1,6 +1,9 @@
 from scipy.spatial import distance as sd
 import numpy as np
 
+N = 11
+r = 0.4
+
 
 class Node:
     def __init__(self, i: int, x=-1, y=-1):
@@ -42,8 +45,6 @@ def create_tree(root: Node):
 
 
 if __name__ == '__main__':
-    N = 11
-    r = 0.4
 
     # Create Nodes
     nodes = []

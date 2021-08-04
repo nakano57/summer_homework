@@ -39,6 +39,7 @@ def S(i: Node):
     return l
 
 
+#Prim's algorithm
 def create_tree(root: Node):
 
     not_check = copy.copy(nodes)
@@ -47,7 +48,7 @@ def create_tree(root: Node):
 
     while True:
         # node, distance , parent
-        min_distance_node = (None, float('inf'), None)
+        min_distance_node = (Node, float('inf'), Node)
 
         for n in confirmed:
             # Calculate the distance between the confirmed node and each nodes
@@ -56,9 +57,11 @@ def create_tree(root: Node):
                                           else float('inf')))
             #print(n.i, not_check)
 
+            # ---for Debug---
             #ds = [distance(i, n) for i in not_check]
             #ds = [i if i <= r else float('inf') for i in ds]
             #print(ds)
+            # ---------------
 
             temp = (not_check[0], distance(not_check[0], n), n)
 
@@ -72,7 +75,6 @@ def create_tree(root: Node):
         min_distance_node[2].children.append(min_distance_node[0])
         V[min_distance_node[2].i][min_distance_node[0].i] = 1
         V[min_distance_node[0].i][min_distance_node[2].i] = 1
-        #print(V)
 
         if not not_check:
             break

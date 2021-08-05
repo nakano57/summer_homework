@@ -24,4 +24,4 @@ def plot(nodes, V, BS):
                 plt.plot([nodes[i].x, nodes[j].x], [nodes[i].y, nodes[j].y])
 
     plt.savefig("tree.jpg")
-    plt.show()
+    #plt.show()

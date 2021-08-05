@@ -2,6 +2,8 @@ from scipy.spatial import distance as sd
 import numpy as np
 import copy
 
+import dotplot
+
 N = 11
 r = 0.4
 
@@ -18,6 +20,8 @@ class Node:
 
         self.parent: Node = None
         self.children: list[Node] = []
+
+        self.root = False
 
     def __repr__(self):
         #return "<i= %d, x= %f, y= %f, parent= %s, children= %s>" % (
@@ -94,8 +98,10 @@ if __name__ == '__main__':
     BS_d = [distance(i, BS) for i in nodes]
     root_index = BS_d.index(min(BS_d))
     nodes[root_index].parent = BS
+    nodes[root_index].root = True
 
     # Create Tree
     V = np.zeros((N, N))
     create_tree(nodes[root_index])
     print(V)
+    dotplot.plot(nodes, V, BS)

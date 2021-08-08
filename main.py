@@ -34,13 +34,22 @@ def distance(i: Node, j: Node):
 
 
 # the set of nodes j∈N where d(i,j)≤r
-def S(i: Node):
+def S(i):
     l: list[Node] = []
-    for j in nodes:
-        if distance(i, j) <= 0.4:
-            l.append(j)
+
+    if type(i) == list:
+        for j in i:
+            l += S(j)
+    else:
+        for j in nodes:
+            if distance(i, j) <= r:
+                l.append(j)
 
     return l
+
+
+def p(i: Node):
+    return i.parent
 
 
 #Prim's algorithm
@@ -53,28 +62,36 @@ def create_tree(root: Node):
     while True:
         # node, distance , parent
         min_distance_node = (Node, float('inf'), Node)
+        temp = (Node, float('inf'), Node)
 
         for n in confirmed:
             # Calculate the distance between the confirmed node and each nodes
-            # If the distance is greater than 0.4, then inf
+            # If the distance is greater than r, then inf
             not_check.sort(key=lambda x: (distance(x, n) if distance(x, n) <= r
                                           else float('inf')))
             #print(n.i, not_check)
 
             # ---for Debug---
-            #ds = [distance(i, n) for i in not_check]
-            #ds = [i if i <= r else float('inf') for i in ds]
-            #print(ds)
+            # ds = [distance(i, n) for i in not_check]
+            # ds = [i if i <= r else float('inf') for i in ds]
+            # print(ds)
             # ---------------
 
-            temp = (not_check[0], distance(not_check[0], n), n)
+            ds = (distance(not_check[0], n)
+                  if distance(not_check[0], n) <= r else float('inf'))
+
+            temp = (not_check[0], ds, n)
 
             if temp[1] < min_distance_node[1]:
                 min_distance_node = copy.copy(temp)
 
         confirmed.append(min_distance_node[0])
-        not_check.remove(min_distance_node[0])
-
+        try:
+            not_check.remove(min_distance_node[0])
+        except ValueError as e:
+            print(e)
+            print('cant make a tree')
+            exit(1)
         min_distance_node[0].parent = min_distance_node[2]
         min_distance_node[2].children.append(min_distance_node[0])
         V[min_distance_node[2].i][min_distance_node[0].i] = 1
@@ -96,6 +113,10 @@ if __name__ == '__main__':
 
     # Set root
     BS_d = [distance(i, BS) for i in nodes]
+    if min(BS_d) > r:
+        print("Error: Base Station is out of range")
+        exit(1)
+
     root_index = BS_d.index(min(BS_d))
     nodes[root_index].parent = BS
     nodes[root_index].root = True
@@ -103,5 +124,25 @@ if __name__ == '__main__':
     # Create Tree
     V = np.zeros((N, N))
     create_tree(nodes[root_index])
-    print(V)
+    #print(V)
     dotplot.plot(nodes, V, BS)
+
+    print()
+
+    f = np.zeros((N, N))
+    for i in nodes:
+        for j in nodes:
+            if i == j:
+                continue
+
+            temp = S(p(i))
+            temp.remove(i)
+            temp2 = S(p(j))
+            temp2.remove(j)
+
+            if (j in temp) or (i in temp):
+                f[i.i][j.i] = 1
+            else:
+                f[i.i][j.i] = 0
+
+    print(f)

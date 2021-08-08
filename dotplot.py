@@ -16,7 +16,7 @@ def plot(nodes, V, BS):
 
     for n in nodes:
         plt.scatter(n.x, n.y)
-        #plt.annotate(str(n.i), xy=(n.x, n.y))
+        plt.annotate(str(n.i), xy=(n.x, n.y))
 
     for i in range(len(V)):
         for j in range(i):

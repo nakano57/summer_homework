@@ -52,6 +52,10 @@ def p(i: Node):
     return i.parent
 
 
+def C(j: Node):
+    return j.children
+
+
 #Prim's algorithm
 def create_tree(root: Node):
 
@@ -101,6 +105,20 @@ def create_tree(root: Node):
             break
 
 
+def GreedyAlgorithm(N: list, F):
+    Q = set()
+    R = set(copy.copy(N))
+
+    V = set()
+
+    for j in N:
+        if set(j.children) <= Q and j in R:
+            V.add(j)
+
+    print(V)
+    #Solve MIS problem
+
+
 if __name__ == '__main__':
 
     # Create Nodes
@@ -127,8 +145,7 @@ if __name__ == '__main__':
     #print(V)
     dotplot.plot(nodes, V, BS)
 
-    print()
-
+    #Create interference matrix
     f = np.zeros((N, N))
     for i in nodes:
         for j in nodes:
@@ -140,9 +157,9 @@ if __name__ == '__main__':
             temp2 = S(p(j))
             temp2.remove(j)
 
-            if (j in temp) or (i in temp):
+            if (j in temp) or (i in temp2):
                 f[i.i][j.i] = 1
             else:
                 f[i.i][j.i] = 0
 
-    print(f)
+    GreedyAlgorithm(nodes, f)

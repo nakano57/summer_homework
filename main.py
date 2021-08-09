@@ -56,6 +56,13 @@ def C(j: Node):
     return j.children
 
 
+def u(T: int, i: Node) -> int:
+    if i.parent.i == -1:
+        return T
+
+    return u(T, i.parent) - 1
+
+
 #Prim's algorithm
 def create_tree(root: Node):
 
@@ -105,18 +112,52 @@ def create_tree(root: Node):
             break
 
 
-def GreedyAlgorithm(N: list, F):
+def DVGA(N: list, f, T):
     Q = set()
     R = set(copy.copy(N))
 
-    V = set()
+    Y = set()
 
-    for j in N:
-        if set(j.children) <= Q and j in R:
-            V.add(j)
+    dbg = []
 
-    print(V)
-    #Solve MIS problem
+    i = 0
+
+    for i in range(1, T + 1):
+
+        #Step 1
+        for j in N:
+            if u(T, j) == i:
+                dbg.append(u(T, j))
+                Y.add(j)
+
+        #Step 2
+        temp = set()
+        for j in Y:
+            temp = temp | set(j.children)
+
+        if not (temp <= Q):
+            print('Q')
+            print(Y)
+            print(dbg)
+            return False
+
+        for j in Y:
+            for k in Y:
+                if j != k and f[j.i][k.i] == 1:
+                    print('jk')
+                    return False
+
+        #Step 3
+        V = set()
+        for j in N:
+            if set(C(j)) <= Q and (j in R):
+                V.add(j)
+
+        #Step 4
+        # Solve MIS problem
+
+        print(Y)
+        print(dbg)
 
 
 if __name__ == '__main__':
@@ -162,4 +203,5 @@ if __name__ == '__main__':
             else:
                 f[i.i][j.i] = 0
 
-    GreedyAlgorithm(nodes, f)
+    T = 15
+    DVGA(nodes, f, T)

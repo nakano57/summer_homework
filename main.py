@@ -1,4 +1,5 @@
 from pyqubo import Array, Constraint, Placeholder, solve_qubo
+from dwave.system.samplers import DWaveSampler
 from scipy.spatial import distance as sd
 import numpy as np
 import copy
@@ -232,6 +233,8 @@ def Computational_Method(N: list, f, T_star, K):
             k += 1
             if k >= K:
                 break
+
+    return T_u, X_u
 
 
 if __name__ == '__main__':

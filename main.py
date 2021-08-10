@@ -218,9 +218,20 @@ def DVGA(N: list, f, T):
 def Computational_Method(N: list, f, T_star, K):
     T = len(N)
     k = 0
+    X_u = None
 
     while True:
-        X_u, T_u, w = DVGA(N, f, T)
+        X_hat_u, T_u, w = DVGA(N, f, T)
+        if w == 'success':
+            X_u = X_hat_u
+            if T_u > T_star:
+                T = T_u - 1
+            else:
+                break
+        elif w == 'failure':
+            k += 1
+            if k >= K:
+                break
 
 
 if __name__ == '__main__':
@@ -264,4 +275,5 @@ if __name__ == '__main__':
             f[i.i][j.i] = 0
 
     T = 15
-    DVGA(nodes, f, T)
+    K = 2
+    Computational_Method(nodes, f, T, K)

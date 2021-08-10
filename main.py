@@ -122,15 +122,12 @@ def DVGA(N: list, f, T):
     Y = set()
     x = np.zeros((len(N), T + 1))
 
-    dbg = []
-
     i = 0
     for i in range(1, T + 1):
 
         #Step 1
         for j in N:
             if u(T, j) == i:
-                dbg.append(u(T, j))
                 Y.add(j)
 
         #Step 2
@@ -139,15 +136,13 @@ def DVGA(N: list, f, T):
             temp = temp | set(j.children)
 
         if not (temp <= Q):
-            print('Q')
-            print(Y)
-            print(dbg)
-            return False
+            w = 'failure'
+            return None, None, w
 
         for j, k in itr.combinations(Y, 2):
             if f[j.i][k.i] == 1:
-                print('jk')
-                return False
+                w = 'failure'
+                return None, None, w
 
         #Step 3
         V = set()
@@ -168,10 +163,10 @@ def DVGA(N: list, f, T):
         model = H.compile()
         qubo, offset = model.to_qubo()
 
-        # SAで解を探索する
+        # Simurated Annealing
         raw_solution = solve_qubo(qubo)
 
-        # 得られた結果をデコードする
+        # Decode solution
         decoded_sample = model.decode_sample(raw_solution, vartype="BINARY")
         z = [decoded_sample.array('z', k) for k in range(len(V))]
         print(V, z)
@@ -217,12 +212,16 @@ def DVGA(N: list, f, T):
             else:
                 T_u = None
                 w = 'failure'
-        print(w)
-        return T_u, w, x
+        return x, T_u, w
 
 
-#print(Y)
-#print(dbg)
+def Computational_Method(N: list, f, T_star, K):
+    T = len(N)
+    k = 0
+
+    while True:
+        X_u, T_u, w = DVGA(N, f, T)
+
 
 if __name__ == '__main__':
 

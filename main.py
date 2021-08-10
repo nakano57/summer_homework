@@ -1,11 +1,14 @@
+from pyqubo import Array, Constraint, Placeholder, solve_qubo
 from scipy.spatial import distance as sd
 import numpy as np
 import copy
+import itertools as itr
 
 import dotplot
 
 N = 11
 r = 0.4
+alpha = 2.5
 
 
 class Node:
@@ -117,11 +120,11 @@ def DVGA(N: list, f, T):
     R = set(copy.copy(N))
 
     Y = set()
+    x = np.zeros((len(N), T + 1))
 
     dbg = []
 
     i = 0
-
     for i in range(1, T + 1):
 
         #Step 1
@@ -141,11 +144,10 @@ def DVGA(N: list, f, T):
             print(dbg)
             return False
 
-        for j in Y:
-            for k in Y:
-                if j != k and f[j.i][k.i] == 1:
-                    print('jk')
-                    return False
+        for j, k in itr.combinations(Y, 2):
+            if f[j.i][k.i] == 1:
+                print('jk')
+                return False
 
         #Step 3
         V = set()
@@ -155,10 +157,72 @@ def DVGA(N: list, f, T):
 
         #Step 4
         # Solve MIS problem
+        z_a = Array.create('z', shape=len(V), vartype='BINARY')
 
-        print(Y)
-        print(dbg)
+        H_A = sum(f[j.i][k.i] * z_a[list(V).index(j)] * z_a[list(V).index(k)]
+                  for j, k in itr.combinations(V, 2))
+        H_B = sum((((u(T, j) - i) / (u(T, j) - i - 1)) * z_a[list(V).index(j)])
+                  for j in V)
 
+        H = -H_A + alpha * H_B
+        model = H.compile()
+        qubo, offset = model.to_qubo()
+
+        # SAで解を探索する
+        raw_solution = solve_qubo(qubo)
+
+        # 得られた結果をデコードする
+        decoded_sample = model.decode_sample(raw_solution, vartype="BINARY")
+        z = [decoded_sample.array('z', k) for k in range(len(V))]
+        print(V, z)
+
+        #Step4.1
+        #Repeat Step 4 until we get the solution {zj} satisfying the constraints (16).
+        #ToDo
+
+        # Step 5
+        V_0 = set()
+        V_1 = set()
+        for index, temp in enumerate(z):
+            if temp == 0:
+                V_0.add(list(V)[index])
+            else:
+                V_1.add(list(V)[index])
+
+        # Step 6
+        Q = Q | V_1
+        R = R - V_1
+        for j in N:
+            if j in V_1:
+                x[j.i][i] = 1
+            else:
+                x[j.i][i] = 0
+
+        # Step 7
+        #if R is empty, then False.
+        if not R:
+            #R is empty.
+            if i <= T:
+                T_u = i
+                w = 'success'
+            else:
+                T_u = None
+                w = 'failure'
+
+        else:
+            #R isn't empty.
+            i += 1
+            if i <= T:
+                continue
+            else:
+                T_u = None
+                w = 'failure'
+        print(w)
+        return T_u, w, x
+
+
+#print(Y)
+#print(dbg)
 
 if __name__ == '__main__':
 
@@ -188,20 +252,17 @@ if __name__ == '__main__':
 
     #Create interference matrix
     f = np.zeros((N, N))
-    for i in nodes:
-        for j in nodes:
-            if i == j:
-                continue
+    for i, j in itr.combinations(nodes, 2):
 
-            temp = S(p(i))
-            temp.remove(i)
-            temp2 = S(p(j))
-            temp2.remove(j)
+        temp = S(p(i))
+        temp.remove(i)
+        temp2 = S(p(j))
+        temp2.remove(j)
 
-            if (j in temp) or (i in temp2):
-                f[i.i][j.i] = 1
-            else:
-                f[i.i][j.i] = 0
+        if (j in temp) or (i in temp2):
+            f[i.i][j.i] = 1
+        else:
+            f[i.i][j.i] = 0
 
     T = 15
     DVGA(nodes, f, T)

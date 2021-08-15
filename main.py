@@ -4,8 +4,10 @@ from scipy.spatial import distance as sd
 import numpy as np
 import copy
 import itertools as itr
+import dimod
 
 import dotplot
+#import token
 
 N = 11
 r = 0.4
@@ -106,7 +108,7 @@ def create_tree(root: Node):
         except ValueError as e:
             print(e)
             print('cant make a tree')
-            exit(1)
+            return False
         min_distance_node[0].parent = min_distance_node[2]
         min_distance_node[2].children.append(min_distance_node[0])
         V[min_distance_node[2].i][min_distance_node[0].i] = 1
@@ -114,6 +116,8 @@ def create_tree(root: Node):
 
         if not not_check:
             break
+
+    return True
 
 
 def DVGA(N: list, f, T):
@@ -165,9 +169,13 @@ def DVGA(N: list, f, T):
         qubo, offset = model.to_qubo()
 
         # Simurated Annealing
-        raw_solution = solve_qubo(qubo)
+        sampleset = dimod.SimulatedAnnealingSampler().sample_qubo(qubo)
+
+        # Exact Solver
+        #sampleset = dimod.ExactSolver().sample_qubo(qubo)
 
         # Decode solution
+        raw_solution = sampleset.first.sample
         decoded_sample = model.decode_sample(raw_solution, vartype="BINARY")
         z = [decoded_sample.array('z', k) for k in range(len(V))]
         print(V, z)
@@ -239,29 +247,32 @@ def Computational_Method(N: list, f, T_star, K):
 
 if __name__ == '__main__':
 
-    # Create Nodes
-    nodes = []
-    for i in range(N):
-        nodes.append(Node(i))
+    while True:
+        # Create Nodes
+        nodes = []
+        for i in range(N):
+            nodes.append(Node(i))
 
-    # Create Base Station
-    BS = Node(-1, 0.5, 1.05)
+        # Create Base Station
+        BS = Node(-1, 0.5, 1.05)
 
-    # Set root
-    BS_d = [distance(i, BS) for i in nodes]
-    if min(BS_d) > r:
-        print("Error: Base Station is out of range")
-        exit(1)
+        # Set root
+        BS_d = [distance(i, BS) for i in nodes]
+        if min(BS_d) > r:
+            print("Error: Base Station is out of range")
+            continue
 
-    root_index = BS_d.index(min(BS_d))
-    nodes[root_index].parent = BS
-    nodes[root_index].root = True
+        root_index = BS_d.index(min(BS_d))
+        nodes[root_index].parent = BS
+        nodes[root_index].root = True
 
-    # Create Tree
-    V = np.zeros((N, N))
-    create_tree(nodes[root_index])
-    #print(V)
-    dotplot.plot(nodes, V, BS)
+        # Create Tree
+        V = np.zeros((N, N))
+        if not create_tree(nodes[root_index]):
+            continue
+        #print(V)
+        dotplot.plot(nodes, V, BS)
+        break
 
     #Create interference matrix
     f = np.zeros((N, N))

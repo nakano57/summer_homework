@@ -270,7 +270,7 @@ if __name__ == '__main__':
         V = np.zeros((N, N))
         if not create_tree(nodes[root_index]):
             continue
-        #print(V)
+        print("Done!")
         dotplot.plot(nodes, V, BS)
         break
 

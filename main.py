@@ -164,15 +164,15 @@ def DVGA(N: list, f, T):
         H_B = sum((((u(T, j) - i) / (u(T, j) - i - 1)) * z_a[list(V).index(j)])
                   for j in V)
 
-        H = -H_A + alpha * H_B
+        H = -H_B + alpha * H_A
         model = H.compile()
         qubo, offset = model.to_qubo()
 
         # Simurated Annealing
-        sampleset = dimod.SimulatedAnnealingSampler().sample_qubo(qubo)
+        #sampleset = dimod.SimulatedAnnealingSampler().sample_qubo(qubo)
 
         # Exact Solver
-        #sampleset = dimod.ExactSolver().sample_qubo(qubo)
+        sampleset = dimod.ExactSolver().sample_qubo(qubo)
 
         # Decode solution
         raw_solution = sampleset.first.sample

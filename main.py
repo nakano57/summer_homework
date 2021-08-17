@@ -302,5 +302,6 @@ if __name__ == '__main__':
             f[i.i][j.i] = 0
 
     T_u, X_u = Computational_Method(nodes, f, 3, K)
+    print("Answer:")
     print(T_u)
     print(X_u)

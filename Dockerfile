@@ -13,14 +13,11 @@ ENV TERM xterm
 RUN apt-get install -y vim less libboost-dev swig build-essential cmake git
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
-RUN pip install scikit-build
-RUN pip install matplotlib
-RUN pip install scipy
-RUN pip install numpy
+RUN pip install scikit-build matplotlib scipy numpy
 RUN git clone https://github.com/dwavesystems/dwave-tabu.git
 WORKDIR /dwave-tabu
 RUN pip install -r requirements.txt
 RUN python3 setup.py build_ext --inplace
 RUN python3 setup.py install
 RUN pip install dwave-ocean-sdk --ignore-installed
-RUN dwave setup --install-all
+#RUN dwave setup --install-all -y

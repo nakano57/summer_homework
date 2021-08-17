@@ -12,6 +12,8 @@ import dotplot
 N = 11
 r = 0.4
 alpha = 2.5
+T = 15
+K = 2
 
 
 class Node:
@@ -131,7 +133,7 @@ def DVGA(N: list, f, T):
     for i in range(1, T + 1):
 
         #Step 1
-        for j in N:
+        for j in R:
             if u(T, j) == i:
                 Y.add(j)
 
@@ -144,10 +146,11 @@ def DVGA(N: list, f, T):
             w = 'failure'
             return None, None, w
 
-        for j, k in itr.combinations(Y, 2):
-            if f[j.i][k.i] == 1:
-                w = 'failure'
-                return None, None, w
+        if len(Y) >= 2:
+            for j, k in itr.combinations(Y, 2):
+                if f[j.i][k.i] == 1:
+                    w = 'failure'
+                    return None, None, w
 
         #Step 3
         V = set()
@@ -159,10 +162,16 @@ def DVGA(N: list, f, T):
         # Solve MIS problem
         z_a = Array.create('z', shape=len(V), vartype='BINARY')
 
-        H_A = sum(f[j.i][k.i] * z_a[list(V).index(j)] * z_a[list(V).index(k)]
-                  for j, k in itr.combinations(V, 2))
-        H_B = sum((((u(T, j) - i) / (u(T, j) - i - 1)) * z_a[list(V).index(j)])
-                  for j in V)
+        try:
+            H_A = sum(f[j.i][k.i] * z_a[list(V).index(j)] *
+                      z_a[list(V).index(k)] for j, k in itr.combinations(V, 2))
+            H_B = sum(
+                (((u(T, j) - i) / (u(T, j) - i - 1)) * z_a[list(V).index(j)])
+                for j in V)
+        except ZeroDivisionError as e:
+            print(e)
+            w = 'failure'
+            return None, None, w
 
         H = -H_B + alpha * H_A
         model = H.compile()
@@ -225,16 +234,20 @@ def DVGA(N: list, f, T):
 
 
 def Computational_Method(N: list, f, T_star, K):
-    T = len(N)
+    t = len(N)
     k = 0
     X_u = None
+    T_success = -1
 
     while True:
-        X_hat_u, T_u, w = DVGA(N, f, T)
+        X_hat_u, T_u, w = DVGA(N, f, t)
+        print(w)
+
         if w == 'success':
             X_u = X_hat_u
             if T_u > T_star:
-                T = T_u - 1
+                t = T_u - 1
+                T_success = T_u
             else:
                 break
         elif w == 'failure':
@@ -242,7 +255,7 @@ def Computational_Method(N: list, f, T_star, K):
             if k >= K:
                 break
 
-    return T_u, X_u
+    return T_success, X_u
 
 
 if __name__ == '__main__':
@@ -288,6 +301,6 @@ if __name__ == '__main__':
         else:
             f[i.i][j.i] = 0
 
-    T = 15
-    K = 2
-    Computational_Method(nodes, f, T, K)
+    T_u, X_u = Computational_Method(nodes, f, 3, K)
+    print(T_u)
+    print(X_u)

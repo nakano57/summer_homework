@@ -20,4 +20,12 @@ RUN pip install -r requirements.txt
 RUN python3 setup.py build_ext --inplace
 RUN python3 setup.py install
 RUN pip install dwave-ocean-sdk --ignore-installed
-#RUN dwave setup --install-all -y
+RUN echo \
+    ""$CONFIGURATION_FILE_PATH"$'\n'\
+    "y"$'\n'\
+    "$PROFILE_NAME"$'\n'\
+    "$ENDPOINT"$'\n'\
+    "$TOKEN"$'\n'\
+    "$DEFEAULT_CLIENT_CLASS"$'\n'\
+    "$DEFEAULT_SOLVER"$'\n'"\
+    | dwave setup --install-all

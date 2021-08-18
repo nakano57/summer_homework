@@ -1,5 +1,6 @@
 from pyqubo import Array, Constraint, Placeholder, solve_qubo
 from dwave.system.samplers import DWaveSampler
+from dwave.system.composites import EmbeddingComposite
 from scipy.spatial import distance as sd
 import numpy as np
 import copy
@@ -7,7 +8,7 @@ import itertools as itr
 import dimod
 
 import dotplot
-#import token
+import dkey
 
 N = 11
 r = 0.4
@@ -179,19 +180,37 @@ def DVGA(N: list, f, T):
 
         # Simurated Annealing
         #sampleset = dimod.SimulatedAnnealingSampler().sample_qubo(qubo)
+        #raw_solution = sampleset.first.sample
 
         # Exact Solver
-        sampleset = dimod.ExactSolver().sample_qubo(qubo)
+        #sampleset = dimod.ExactSolver().sample_qubo(qubo)
+        #raw_solution = sampleset.first.sample
 
-        # Decode solution
-        raw_solution = sampleset.first.sample
-        decoded_sample = model.decode_sample(raw_solution, vartype="BINARY")
-        z = [decoded_sample.array('z', k) for k in range(len(V))]
-        print(V, z)
+        # Quantum Annealing
+        solver = 'Advantage_system1.1'
+        dw = DWaveSampler(endpoint=dkey.endpoint,
+                          token=dkey.token,
+                          solver=solver)
+        sampler = EmbeddingComposite(dw)
+        raw_solution = sampler.sample_qubo(qubo, num_reads=100).first.sample
 
-        #Step4.1
-        #Repeat Step 4 until we get the solution {zj} satisfying the constraints (16).
-        #ToDo
+        while True:
+            # Decode solution
+            decoded_sample = model.decode_sample(raw_solution,
+                                                 vartype="BINARY")
+            z = [decoded_sample.array('z', k) for k in range(len(V))]
+            print(V, z)
+
+            #Step4.1
+            #Repeat Step 4 until we get the solution {zj} satisfying the constraints (16).
+            if len(V) >= 2:
+                for j, k in itr.combinations(V, 2):
+                    if f[j.i][k.i] == 1:
+                        print(
+                            'the solution does not satisfying the constraints (16), repeat'
+                        )
+                        continue
+            break
 
         # Step 5
         V_0 = set()

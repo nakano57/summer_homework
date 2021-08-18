@@ -1,11 +1,10 @@
-from pyqubo import Array, Constraint, Placeholder, solve_qubo
+from pyqubo import Array
 from dwave.system.samplers import DWaveSampler
 from dwave.system.composites import EmbeddingComposite
 from scipy.spatial import distance as sd
 import numpy as np
 import copy
 import itertools as itr
-import dimod
 
 import dotplot
 import dkey
@@ -203,12 +202,14 @@ def DVGA(N: list, f, T):
 
             #Step4.1
             #Repeat Step 4 until we get the solution {zj} satisfying the constraints (16).
-            if len(V) >= 2:
+            count = 0
+            if len(V) >= 2 and count < K:
                 for j, k in itr.combinations(V, 2):
                     if f[j.i][k.i] == 1:
                         print(
                             'the solution does not satisfying the constraints (16), repeat'
                         )
+                        count += 1
                         continue
             break
 
@@ -302,8 +303,8 @@ if __name__ == '__main__':
         V = np.zeros((N, N))
         if not create_tree(nodes[root_index]):
             continue
-        print("Done!")
-        dotplot.plot(nodes, V, BS)
+        print("Finished creating the tree")
+        dotplot.plot(nodes, V, BS, show=True)
         break
 
     #Create interference matrix

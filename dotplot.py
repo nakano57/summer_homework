@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-def plot(nodes, V, BS):
+def plot(nodes, V, BS, show=False, save=True):
     plt.figure()
     plt.xlim((-0.1, 1.1))
     plt.ylim((-0.1, 1.1))
@@ -23,5 +23,8 @@ def plot(nodes, V, BS):
             if V[i][j] == 1:
                 plt.plot([nodes[i].x, nodes[j].x], [nodes[i].y, nodes[j].y])
 
-    plt.savefig("tree.jpg")
-    #plt.show()
+    if save:
+        plt.savefig("tree.jpg")
+
+    if show:
+        plt.show()
